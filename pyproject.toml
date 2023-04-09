@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "auto_vicuna"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Bill Schumacher", email="34168009+BillSchumacher@users.noreply.github.com" },
 ]
@@ -17,14 +17,20 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "click", "tqdm", "python-dotenv", "fschat", "torch", "redis", "orjson"
+  "click", "tqdm", "python-dotenv", "fschat", "torch", "redis", "orjson",
+  "transformers @ git+https://github.com/huggingface/transformers.git",
+  "fschat @ git+https://github.com/lm-sys/FastChat.git"
 ]
+
 [project.urls]
 "Homepage" = "https://github.com/BillSchumacher/Auto-Vicuna"
 "Bug Tracker" = "https://github.com/BillSchumacher/Auto-Vicuna/issues"
 
 [project.scripts]
 auto_vicuna = "auto_vicuna.__main__:main"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel.force-include]
 "bin/auto_vicuna.py" = "auto_vicuna/__main__.py"

@@ -1,4 +1,4 @@
-fschat
+fschat @ git+https://github.com/lm-sys/FastChat.git
 redis
 orjson
 click
