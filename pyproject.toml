@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "auto_vicuna"
+version = "0.0.1"
+authors = [
+  { name="Bill Schumacher", email="34168009+BillSchumacher@users.noreply.github.com" },
+]
+description = "An experiment with Vicuna."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "click", "tqdm", "python-dotenv", "fschat", "torch", "redis", "orjson"
+]
+[project.urls]
+"Homepage" = "https://github.com/BillSchumacher/Auto-Vicuna"
+"Bug Tracker" = "https://github.com/BillSchumacher/Auto-Vicuna/issues"
+
+[project.scripts]
+auto_vicuna = "auto_vicuna.__main__:main"
+
+[tool.hatch.build.targets.wheel.force-include]
+"bin/auto_vicuna.py" = "auto_vicuna/__main__.py"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = ""
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326"
+
+[tool.pylint.format]
+max-line-length = "88"

@@ -1,0 +1,10 @@
+fschat
+redis
+orjson
+click
+tqdm
+python-dotenv
+black
+isort
+flake8
+pylint
