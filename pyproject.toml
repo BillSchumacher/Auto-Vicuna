@@ -18,8 +18,7 @@ classifiers = [
 ]
 dependencies = [
   "click", "tqdm", "python-dotenv", "fschat", "torch", "redis", "orjson",
-  "transformers @ git+https://github.com/huggingface/transformers.git",
-  "fschat @ git+https://github.com/lm-sys/FastChat.git"
+  "fschat", "transformers"
 ]
 
 [project.urls]
