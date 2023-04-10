@@ -38,3 +38,20 @@ You might need to add:
 ```
 
 To the PyTorch installation commands if you have a previous version of PyTorch installed.
+
+## LLaMA Weights
+
+If your weights used LLaMATokenizer you may need a different version of transformers.
+
+I have fork that should work located here: https://github.com/BillSchumacher/transformers
+
+You should clone this repo and:
+```
+pip uninstall transformers
+cd path/to/my/transformers/cloned/repo
+python setup.py install
+```
+
+For some reason pip install -e . causes issues.
+
+If you do that, delete __pycache__, dist and build folders and try the setup.py method instead.
