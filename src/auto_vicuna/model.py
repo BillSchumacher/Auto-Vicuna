@@ -6,19 +6,18 @@ from fastchat.serve.monkey_patch_non_inplace import (
 )
 
 try:
-    # noqa: F401
     from transformers import (  # noqa: F401 pylint: disable=unused-import
         AutoModel,
         AutoModelForCausalLM,
         AutoTokenizer,
-        LlamaTokenizer,
+        LlamaTokenizer as Tokenizer
     )
 except ImportError:
     from transformers import (  # noqa: F401 pylint: disable=unused-import
         AutoModel,
         AutoModelForCausalLM,
         AutoTokenizer,
-        LLaMATokenizer,
+        LLaMATokenizer as Tokenizer
     )
 
 

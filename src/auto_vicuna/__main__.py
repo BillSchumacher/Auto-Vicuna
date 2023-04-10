@@ -10,6 +10,8 @@ import torch
 from dotenv import load_dotenv
 
 from auto_vicuna.model import load_model
+from auto_vicuna.loop import main_loop
+from auto_vicuna.plugins import load_plugins
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 load_dotenv()
@@ -25,22 +27,27 @@ load_dotenv()
 @click.option("--device", type=str, default=DEVICE)
 @click.option("--debug", is_flag=True)
 @click.option("--load_8bit", is_flag=True)
+@click.option(
+    "--plugins_path", type=click.Path(exists=True),
+    default=lambda: os.environ.get("PLUGINS_PATH", Path(os.getcwd()) / "plugins")
+)
 def main(
     vicuna_weights: Path,
     num_gpus: int = 1,
     device: str = DEVICE,
     debug: bool = False,
     load_8bit: bool = False,
+    plugins_path: Path = Path(os.getcwd()) / "plugins",
 ) -> None:
     """Auto-Vicuna: A Python package for automatically generating Vicuna randomness."""
-    click.echo(f"Auto-Vicuna\n===========\nVersion: 0.0.1\nWeights: {vicuna_weights}")
+    click.echo(f"Auto-Vicuna\n===========\nVersion: 0.1.0\nWeights: {vicuna_weights}")
     click.echo(f"Device: {device}\nTorch version: {torch.__version__}")
     if "cpu" in torch.__version__:
         click.echo("\nError: CPU not supported. Install a GPU version of PyTorch.")
         click.echo("See https://pytorch.org/get-started/locally/ for more info.\n")
         sys.exit(1)
     try:
-        model = load_model(
+        model, tokenizer = load_model(
             vicuna_weights,
             device=device,
             num_gpus=num_gpus,
@@ -63,8 +70,20 @@ def main(
             " --device=cuda"
         )
         sys.exit(1)
+    plugins_found = load_plugins(plugins_path)
+    loaded_plugins = [plugin() for plugin in plugins_found]
+    if loaded_plugins:
+        click.echo(f"\nPlugins found: {len(loaded_plugins)}\n"
+                   "--------------------")
+    for plugin in loaded_plugins:
+        click.echo(f"{plugin._name}: {plugin._version} - {plugin._description}")
+
     if debug:
         click.echo(f"Model: {model}")
+
+    main_loop(model, tokenizer, "bair_v1", temperature=0.7,
+              max_new_tokens=512, plugins=loaded_plugins, debug=debug,
+              model_path=vicuna_weights)
 
 
 if __name__ == "__main__":
