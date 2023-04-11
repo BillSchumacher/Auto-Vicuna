@@ -8,11 +8,12 @@ from pathlib import Path
 import click
 import torch
 from dotenv import load_dotenv
-
-from auto_vicuna.loop import chat_loop
-from auto_vicuna.plugins import load_plugins
-from fastchat.serve.inference import load_model
 from fastchat.serve.cli import SimpleChatIO
+from fastchat.serve.inference import load_model
+
+from auto_vicuna.chat import chat_loop
+from auto_vicuna.conversation import conversation_from_template
+from auto_vicuna.plugins import load_plugins
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 load_dotenv()
@@ -29,8 +30,9 @@ load_dotenv()
 @click.option("--debug", is_flag=True)
 @click.option("--load_8bit", is_flag=True)
 @click.option(
-    "--plugins_path", type=click.Path(exists=True),
-    default=lambda: os.environ.get("PLUGINS_PATH", Path(os.getcwd()) / "plugins")
+    "--plugins_path",
+    type=click.Path(exists=True),
+    default=lambda: os.environ.get("PLUGINS_PATH", Path(os.getcwd()) / "plugins"),
 )
 def main(
     vicuna_weights: Path,
@@ -74,16 +76,25 @@ def main(
     plugins_found = load_plugins(plugins_path)
     loaded_plugins = [plugin() for plugin in plugins_found]
     if loaded_plugins:
-        click.echo(f"\nPlugins found: {len(loaded_plugins)}\n"
-                   "--------------------")
+        click.echo(f"\nPlugins found: {len(loaded_plugins)}\n" "--------------------")
     for plugin in loaded_plugins:
         click.echo(f"{plugin._name}: {plugin._version} - {plugin._description}")
 
     if debug:
         click.echo(f"Model: {model}")
 
-    chat_loop(model, tokenizer, str(vicuna_weights), device, "bair_v1", temperature=0.7,
-              max_new_tokens=512, plugins=loaded_plugins, chatio=SimpleChatIO(), debug=debug)
+    chat_loop(
+        model,
+        tokenizer,
+        str(vicuna_weights),
+        device,
+        conversation_from_template("v1"),
+        temperature=0.7,
+        max_new_tokens=512,
+        plugins=loaded_plugins,
+        chatio=SimpleChatIO(),
+        debug=debug,
+    )
 
 
 if __name__ == "__main__":
