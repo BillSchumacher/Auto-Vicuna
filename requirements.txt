@@ -1,5 +1,5 @@
 transformers @ git+https://github.com/huggingface/transformers.git@656e869a4523f6a0ce90b3aacbb05cc8fb5794bb
-fschat @ git+https://github.com/lm-sys/FastChat.git@50a69c624f3191a31699c29148d1783a6d7034c0
+fschat @ git+https://github.com/lm-sys/FastChat.git@ecb5f2bbd51d848ec63001462be6d7a79938b6d4
 redis
 orjson
 click

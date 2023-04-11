@@ -1,15 +1,22 @@
+"""Chat loop for auto_vicuna."""
 from fastchat.conversation import conv_templates, SeparatorStyle
-from auto_vicuna.model import generate_stream
+from fastchat.serve.serve_chatglm import chatglm_generate_stream
+from fastchat.serve.inference import generate_stream, ChatIO
 
 
-def main_loop(model, tokenizer, conv_template, temperature,
-              max_new_tokens, plugins, debug, model_path):
+def chat_loop(
+    model, tokenizer, model_name: str, device: str,
+    conv_template: str, temperature: float, max_new_tokens: int,
+    plugins, chatio: ChatIO, debug: bool
+):
+
+    is_chatglm = "chatglm" in str(type(model)).lower()
+
     # Chat
-    print(model)
     conv = conv_templates[conv_template].copy()
     while True:
         try:
-            inp = input("User:")
+            inp = chatio.prompt_for_input(conv.roles[0])
         except EOFError:
             inp = ""
         if not inp:
@@ -19,33 +26,30 @@ def main_loop(model, tokenizer, conv_template, temperature,
         conv.append_message(conv.roles[0], inp)
         conv.append_message(conv.roles[1], None)
 
-        prompt = conv.get_prompt()
-        skip_echo_len = len(prompt) + 1
+        if is_chatglm:
+            prompt = conv.messages[conv.offset:]
+            generate_stream_func = chatglm_generate_stream
+            skip_echo_len = len(conv.messages[-2][1]) + 1
+        else:
+            generate_stream_func = generate_stream
+            prompt = conv.get_prompt()
+            skip_echo_len = len(prompt.replace("</s>", " ")) + 1
+
         params = {
-            "model": model_path,
+            "model": model_name,
             "prompt": prompt,
             "temperature": temperature,
             "max_new_tokens": max_new_tokens,
             "stop": conv.sep if conv.sep_style == SeparatorStyle.SINGLE else conv.sep2,
         }
-        output_stream = generate_stream(
-            model, tokenizer, params, model.device
-        )
 
-        pre = 0
-        for outputs in output_stream:
-            outputs = outputs[skip_echo_len:].strip()
-            outputs = outputs.split(" ")
-            now = len(outputs)
-            if now - 1 > pre:
-                print(" ".join(outputs[pre:now-1]), end=" ", flush=True)
-                pre = now - 1
+        chatio.prompt_for_output(conv.roles[1])
+        output_stream = generate_stream_func(model, tokenizer, params, device)
+        outputs = chatio.stream_output(output_stream, skip_echo_len)
+        # NOTE: strip is important to align with the training data.
+        conv.messages[-1][-1] = output = outputs.strip()
 
-        print(" ".join(outputs[pre:now]), flush=True)
-        output = " ".join(outputs)
         for plugin in plugins:
             output = plugin.on_response(output)
-        conv.append_message(conv.roles[1], output)
-        conv.offset += 2
-
-    return conv
+        if debug:
+            print("\n", {"prompt": prompt, "outputs": outputs}, "\n")

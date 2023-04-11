@@ -9,9 +9,10 @@ import click
 import torch
 from dotenv import load_dotenv
 
-from auto_vicuna.model import load_model
-from auto_vicuna.loop import main_loop
+from auto_vicuna.loop import chat_loop
 from auto_vicuna.plugins import load_plugins
+from fastchat.serve.inference import load_model
+from fastchat.serve.cli import SimpleChatIO
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 load_dotenv()
@@ -81,9 +82,8 @@ def main(
     if debug:
         click.echo(f"Model: {model}")
 
-    main_loop(model, tokenizer, "bair_v1", temperature=0.7,
-              max_new_tokens=512, plugins=loaded_plugins, debug=debug,
-              model_path=vicuna_weights)
+    chat_loop(model, tokenizer, str(vicuna_weights), device, "bair_v1", temperature=0.7,
+              max_new_tokens=512, plugins=loaded_plugins, chatio=SimpleChatIO(), debug=debug)
 
 
 if __name__ == "__main__":
