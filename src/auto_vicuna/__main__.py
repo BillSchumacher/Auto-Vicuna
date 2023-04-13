@@ -43,7 +43,7 @@ def main(
     plugins_path: Path = Path(os.getcwd()) / "plugins",
 ) -> None:
     """Auto-Vicuna: A Python package for automatically generating Vicuna randomness."""
-    click.echo(f"Auto-Vicuna\n===========\nVersion: 0.1.0\nWeights: {vicuna_weights}")
+    click.echo(f"Auto-Vicuna\n===========\nVersion: 0.2.0\nWeights: {vicuna_weights}")
     click.echo(f"Device: {device}\nTorch version: {torch.__version__}")
     if "cpu" in torch.__version__:
         click.echo("\nError: CPU not supported. Install a GPU version of PyTorch.")
