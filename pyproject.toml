@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "auto_vicuna"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
   { name="Bill Schumacher", email="34168009+BillSchumacher@users.noreply.github.com" },
 ]
