@@ -8,7 +8,7 @@ from pathlib import Path
 import click
 import torch
 from dotenv import load_dotenv
-from fastchat.serve.cli import SimpleChatIO
+from fastchat.serve.cli import RichChatIO
 from fastchat.serve.inference import load_model
 
 from auto_vicuna.chat import chat_loop
@@ -87,12 +87,11 @@ def main(
         model,
         tokenizer,
         str(vicuna_weights),
-        device,
-        conversation_from_template("v1"),
+        device, conversation_from_template("vicuna_v1.1"),
         temperature=0.7,
         max_new_tokens=512,
         plugins=loaded_plugins,
-        chatio=SimpleChatIO(),
+        chatio=RichChatIO(),
         debug=debug,
     )
 

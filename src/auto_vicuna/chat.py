@@ -11,7 +11,7 @@ from fastchat.serve.serve_chatglm import chatglm_generate_stream
 def chat_one_shot(
     model,
     tokenizer,
-    model_name: str,
+    model_path: str,
     device: str,
     conversation: Conversation,
     message: str,
@@ -52,7 +52,7 @@ def chat_one_shot(
     return chat_output(
         model,
         tokenizer,
-        model_name,
+        model_path,
         device,
         conversation,
         temperature,
@@ -66,7 +66,7 @@ def chat_one_shot(
 def chat_loop(
     model,
     tokenizer,
-    model_name: str,
+    model_path: str,
     device: str,
     conversation: Conversation,
     temperature: float = 0.7,
@@ -109,7 +109,7 @@ def chat_loop(
         chat_output(
             model,
             tokenizer,
-            model_name,
+            model_path,
             device,
             conversation,
             temperature,
@@ -123,7 +123,7 @@ def chat_loop(
 def chat_output(
     model,
     tokenizer,
-    model_name: str,
+    model_path: str,
     device: str,
     conversation: Conversation,
     temperature: float = 0.7,
@@ -132,34 +132,35 @@ def chat_output(
     chatio: ChatIO = SimpleChatIO(),
     debug: bool = False,
 ):
-    is_chatglm = "chatglm" in str(type(model)).lower()
-    if is_chatglm:
-        prompt = conversation.messages[conversation.offset :]
+    if "chatglm" in str(type(model)).lower():
+        prompt = conversation.messages[conversation.offset:]
         generate_stream_func = chatglm_generate_stream
         skip_echo_len = len(conversation.messages[-2][1]) + 1
     else:
         generate_stream_func = generate_stream
         prompt = conversation.get_prompt()
-        skip_echo_len = len(prompt.replace("</s>", " ")) + 1
+        skip_echo_len = len(prompt.replace("</s>", " "))
 
     params = {
-        "model": model_name,
+        "model": model_path,
         "prompt": prompt,
         "temperature": temperature,
         "max_new_tokens": max_new_tokens,
-        "stop": conversation.sep
-        if conversation.sep_style == SeparatorStyle.SINGLE
-        else conversation.sep2,
+        "stop": conversation.sep if conversation.sep_style == SeparatorStyle.SINGLE else conversation.sep2,
     }
 
     chatio.prompt_for_output(conversation.roles[1])
     output_stream = generate_stream_func(model, tokenizer, params, device)
     outputs = chatio.stream_output(output_stream, skip_echo_len)
-    # NOTE: strip is important to align with the training data.
     output = outputs.strip()
 
     for plugin in plugins:
         output = plugin.on_response(output)
+
+    # NOTE: strip is important to align with the training data.
+    conversation.messages[-1][-1] = output
+
+
     if debug:
         print("\n", {"prompt": prompt, "outputs": outputs}, "\n")
     return output
