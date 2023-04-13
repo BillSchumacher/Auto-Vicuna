@@ -55,3 +55,15 @@ python setup.py install
 For some reason pip install -e . causes issues.
 
 If you do that, delete __pycache__, dist and build folders and try the setup.py method instead.
+
+
+## Google Colab
+
+https://colab.research.google.com/github/BillSchumacher/Auto-Vicuna/blob/main/InteractiveManual.ipynb
+
+
+## Interactive manual
+
+Check out the: InteractiveManual.ipynb
+
+For a Jupyter notebook guide.
